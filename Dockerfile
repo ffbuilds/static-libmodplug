@@ -6,9 +6,10 @@ ARG LIBMODPLUG_VERSION=0.8.9.0
 ARG LIBMODPLUG_URL="https://downloads.sourceforge.net/modplug-xmms/libmodplug-$LIBMODPLUG_VERSION.tar.gz"
 ARG LIBMODPLUG_SHA256=457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a3508ad9de
 
-# bump: alpine /FROM alpine:([\d.]+)/ docker:alpine|^3
-# bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-FROM alpine:3.16.2 AS base
+# Must be specified
+ARG ALPINE_VERSION
+
+FROM alpine:${ALPINE_VERSION} AS base
 
 FROM base AS download
 ARG LIBMODPLUG_URL
@@ -30,9 +31,14 @@ COPY --from=download /tmp/libmodplug/ /tmp/libmodplug/
 WORKDIR /tmp/libmodplug
 RUN \
   apk add --no-cache --virtual build \
-    build-base && \
+    build-base pkgconf && \
   ./configure --disable-shared --enable-static && \
   make -j$(nproc) install && \
+  # Sanity tests
+  pkg-config --exists --modversion --path libmodplug && \
+  ar -t /usr/local/lib/libmodplug.a && \
+  readelf -h /usr/local/lib/libmodplug.a && \
+  # Cleanup
   apk del build
 
 FROM scratch
