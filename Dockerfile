@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 
 # bump: libmodplug /LIBMODPLUG_VERSION=([\d.]+)/ fetch:https://sourceforge.net/projects/modplug-xmms/files/|/libmodplug-([\d.]+).tar.gz/
 # bump: libmodplug after ./hashupdate Dockerfile LIBMODPLUG $LATEST
